@@ -27,6 +27,7 @@ boolean toggle2 = 0;
 // anolog storage
 int sensorValue = 0; 
 int cont = 0;
+int send_freq = 10; // sending frequency is 100/send_freq (timer1)
 String pkg = "";
 
 void setup(){
@@ -91,14 +92,16 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 1Hz toggles pin 13 (LED)
   // Increments cont at rate of 100 Hz
   cont++; 
 
-  // Reads sensor and assembles package to send
+  // Reads sensor and assembles package to send (at a rate of 100 Hz)
   sensorValue = analogRead(A0);
-  pkg += "," + String(sensorValue);
+  pkg += String(sensorValue) + ",";
   
-  // This operation runs at 1 Hz
-  if (cont>=100) {
+  //Sends the package with a return carriage character
+  // This operation runs at a rate of 100/send_freq
+  if (cont>=send_freq) {
+    pkg = pkg.substring(0,pkg.length()-1); // remove last comma
     pkg += "\\r";
-    // Sends data package via serial
+    //Sends data package via serial
     Serial.println(pkg);  
     // reset variables
     cont = 0; 
@@ -114,6 +117,7 @@ ISR(TIMER2_COMPA_vect){//timer1 interrupt 8kHz toggles pin 9
 
 void loop(){
   //do other things here
-  
+  //Serial.println("teste");
+  //delay(10);
 }
 
