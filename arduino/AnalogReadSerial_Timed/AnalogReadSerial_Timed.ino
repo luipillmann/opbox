@@ -32,16 +32,22 @@
 //this code will enable arduino timer interrupts.
 //timer1 will interrupt at 100 Hz
 
+#define MEASUREMENT_HEADER  "M"   // Header tag for serial command message
+#define CMD_HEADER  "C"   // Header tag for serial command message
 #define TIME_HEADER  "T"   // Header tag for serial time sync message
 #define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
 
 int flag = 0; // Controls transmission start
+int start = 0; // Gets transmission start
+int start_millis = 0;
+String start_txt = "";
+
 
 // anolog storage
 int sensorValue = 0; 
 int cont = 0;
 int send_freq = 5; // sending frequency is 100/send_freq (timer1)
-String pkg = "";
+String pkg = MEASUREMENT_HEADER;
 
 void setup(){
 
@@ -70,9 +76,10 @@ cli();//stop interrupts
   Serial.begin(9600);
   while (!Serial) ; // Needed for Leonardo only
   pinMode(13, OUTPUT);
-  setSyncProvider(requestSync);  //set function to call when sync required
-  Serial.println("Waiting for sync message");
+  //setSyncProvider(requestSync);  //set function to call when sync required
+  Serial.println("Waiting for command message");
   flag = 0;
+  start = 0;
 
 }//end setup
   
@@ -83,12 +90,19 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at
 //generates pulse wave of frequency 1Hz/2 = 0.5kHz (takes two cycles for full wave- toggle high then toggle low)
   if(flag) {
 
+    if(!start) { // Runs once to get start time of the first measurement
+      start_millis = millis();
+      start = 1;
+      start_txt += "Start time: " + String(start_millis);
+      Serial.println(start_txt);
+    }
+    
     cont++;
-     
+    
     // Reads sensor and assembles package to send (at a rate of 100 Hz)
     sensorValue = analogRead(A0);
-    //time_t t = now(); // Store the current time in time variable t
-    pkg += String(now()) + "," + String(sensorValue) + ";";
+    
+    pkg += String(millis()) + "," + String(sensorValue) + ";";
     //pkg += String(sensorValue) + ";";
     
     //Sends the package with a return carriage character
@@ -101,68 +115,75 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at
       Serial.println(pkg);  //Sends data package via serial
       
       cont = 0; // reset variables
-      pkg =  "";
+      pkg =  MEASUREMENT_HEADER; // resets with first character as the header
     }
   }
 }
 
   
 
-void loop(){    
+void loop()
+{
+  while (!Serial.available()) {} // wait for data to arrive
   
-  if (Serial.available()) {
-    processSyncMessage();
+  // serial read section
+  while (Serial.available()) // this will be skipped if no data present, leading to
+                             // the code sitting in the delay function below
+  {
+    delay(30);  //delay to allow buffer to fill 
+    if (Serial.available() >0)
+    {
+      processCommand();
+    }
   }
-  if (timeStatus()!= timeNotSet) {
-    //digitalClockDisplay();
-    flag = 1; 
-  }
-  if (timeStatus() == timeSet) {
-    digitalWrite(13, HIGH); // LED on if synced
-  } else {
-    digitalWrite(13, LOW);  // LED off if needs refresh
-  }
+  
   //delay(1000);
 }
 
-void digitalClockDisplay(){
-  // digital clock display of the time
-  Serial.print(hour());
-  printDigits(minute());
-  printDigits(second());
-  Serial.print(" ");
-  Serial.print(day());
-  Serial.print(" ");
-  Serial.print(month());
-  Serial.print(" ");
-  Serial.print(year()); 
-  Serial.println(); 
+int aquisitionStatus() {
+  return flag;
 }
 
-void printDigits(int digits){
-  // utility function for digital clock display: prints preceding colon and leading 0
-  Serial.print(":");
-  if(digits < 10)
-    Serial.print('0');
-  Serial.print(digits);
+void startAquisition() {
+  if(!aquisitionStatus()) {
+    flag = 1;
+    Serial.println("Aquisition has started");
+  }
+    
 }
 
+void stopAquisition() {
+  if(aquisitionStatus()) {
+    flag = 0;
+    Serial.println("Aquisition has stopped.");
+  }
+    
+} 
 
-void processSyncMessage() {
-  unsigned long pctime;
-  const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013
-
-  if(Serial.find(TIME_HEADER)) {  
-     pctime = Serial.parseInt();
-     if( pctime >= DEFAULT_TIME) { // check the integer is a valid time (greater than Jan 1 2013)
-       setTime(pctime); // Sync Arduino clock to the time received on the serial port
-     }
+void processCommand() { // Waits for command, which has to start with C
+                        // 'C1' starts aquisition; 'C0' stops aquisition
+  int cmd;
+  
+  if(Serial.find(CMD_HEADER)) {  
+     cmd = Serial.parseInt();
+     switch(cmd) {
+      
+      case 0:
+       stopAquisition();
+       break;
+       
+      case 1: 
+       startAquisition(); // Sync Arduino clock to the time received on the serial port
+       break;
+      default:
+        Serial.println("Command does not exist.");
+     }     
   }
 }
 
-time_t requestSync()
-{
-  Serial.write(TIME_REQUEST);  
-  return 0; // the time will be sent later in response to serial mesg
-}
+//time_t requestSync()
+//{
+//  Serial.write(TIME_REQUEST);  
+//  return 0; // the time will be sent later in response to serial mesg
+//}
 

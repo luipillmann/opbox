@@ -1,8 +1,20 @@
 import serial
+import syslog
+import time
+
 ser = serial.Serial('/dev/cu.usbmodem1411') # MacBook's
 #ser = serial.Serial('/dev/ttyACM0') # RPi's
 
-while True:
-    pkg = ser.readline()
+print 'Reading from serial\n'
 
-    print pkg
+while True:
+    txt = raw_input()
+    print txt.upper()
+    pkg = ser.readline()
+    pass
+
+
+    #pkg = ser.readline()
+    #print pkg
+    #[x.strip() for x in pkg.split(',')]
+    #for p in x: print p
