@@ -32,10 +32,12 @@
 //this code will enable arduino timer interrupts.
 //timer1 will interrupt at 100 Hz
 
-#define MEASUREMENT_HEADER  "M"   // Header tag for serial command message
-#define CMD_HEADER  "C"   // Header tag for serial command message
-#define TIME_HEADER  "T"   // Header tag for serial time sync message
-#define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
+#define LOG_HEADER  "L"         // Header tag for logging messages
+#define STARTTIME_HEADER  "S"   // Header tag for start time message
+#define MEASUREMENT_HEADER  "M" // Header tag for serial measurement message
+#define CMD_HEADER  "C"         // Header tag for serial command message
+#define TIME_HEADER  "T"        // Header tag for serial time sync message
+#define TIME_REQUEST  7         // ASCII bell character requests a time sync message 
 
 int flag = 0; // Controls transmission start
 int start = 0; // Gets transmission start
@@ -93,7 +95,7 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at
     if(!start) { // Runs once to get start time of the first measurement
       start_millis = millis();
       start = 1;
-      start_txt += "Start time: " + String(start_millis);
+      start_txt += STARTTIME_HEADER + String(start_millis); //sends start time in ms with "S"  first
       Serial.println(start_txt);
     }
     
@@ -110,7 +112,7 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at
     if (cont>=send_freq) {
       
       pkg = pkg.substring(0,pkg.length()-1); // remove last comma
-      pkg += "\\r";
+      //pkg += "\\r";
       
       Serial.println(pkg);  //Sends data package via serial
       
@@ -146,16 +148,17 @@ int aquisitionStatus() {
 
 void startAquisition() {
   if(!aquisitionStatus()) {
+    Serial.println(String(LOG_HEADER) + "Aquisition has started");
+    Serial.println("this shit should not be in the file.");
     flag = 1;
-    Serial.println("Aquisition has started");
   }
     
 }
 
 void stopAquisition() {
   if(aquisitionStatus()) {
+    Serial.println(String(LOG_HEADER) + "Aquisition has stopped.");
     flag = 0;
-    Serial.println("Aquisition has stopped.");
   }
     
 } 
