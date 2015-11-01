@@ -1,3 +1,5 @@
+#include <Time.h>
+
 //timer interrupts
 //by Amanda Ghassaei
 //June 2012
@@ -11,41 +13,41 @@
  *
 */
 
+// TimeSerial example
+/* 
+ * TimeSerial.pde
+ * example code illustrating Time library set through serial port messages.
+ *
+ * Messages consist of the letter T followed by ten digit time (as seconds since Jan 1 1970)
+ * you can send the text on the next line using Serial Monitor to set the clock to noon Jan 1 2013
+ T1357041600  
+ *
+ * A Processing example sketch to automatically send the messages is inclided in the download
+ * On Linux, you can use "date +T%s\n > /dev/ttyACM0" (UTC time zone)
+ */ 
+
 //timer setup for timer0, timer1, and timer2.
 //For arduino uno or any board with ATMEL 328/168.. diecimila, duemilanove, lilypad, nano, mini...
 
-//this code will enable all three arduino timer interrupts.
-//timer0 will interrupt at 2kHz
-//timer1 will interrupt at 1Hz
-//timer2 will interrupt at 8kHz
+//this code will enable arduino timer interrupts.
+//timer1 will interrupt at 100 Hz
 
-//storage variables
-boolean toggle0 = 0;
-boolean toggle1 = 0;
-boolean toggle2 = 0;
+#define TIME_HEADER  "T"   // Header tag for serial time sync message
+#define TIME_REQUEST  7    // ASCII bell character requests a time sync message 
+
+int flag = 0; // Controls transmission start
 
 // anolog storage
 int sensorValue = 0; 
 int cont = 0;
-int send_freq = 10; // sending frequency is 100/send_freq (timer1)
+int send_freq = 5; // sending frequency is 100/send_freq (timer1)
 String pkg = "";
 
 void setup(){
-  
-cli();//stop interrupts
 
-//set timer0 interrupt at 2kHz
-  TCCR0A = 0;// set entire TCCR2A register to 0
-  TCCR0B = 0;// same for TCCR2B
-  TCNT0  = 0;//initialize counter value to 0
-  // set compare match register for 2khz increments
-  OCR0A = 124;// = (16*10^6) / (2000*64) - 1 (must be <256)
-  // turn on CTC mode
-  TCCR0A |= (1 << WGM01);
-  // Set CS01 and CS00 bits for 64 prescaler
-  TCCR0B |= (1 << CS01) | (1 << CS00);   
-  // enable timer compare interrupt
-  TIMSK0 |= (1 << OCIE0A);
+//----------------------------------- INTERRUPTS SETUP -----------------------------------//
+
+cli();//stop interrupts
 
 //set timer1 interrupt at 100Hz -- (Alterado para 100 Hz)
   TCCR1A = 0;// set entire TCCR1A register to 0
@@ -59,65 +61,108 @@ cli();//stop interrupts
   TCCR1B |= (1 << CS12);  
   // enable timer compare interrupt
   TIMSK1 |= (1 << OCIE1A);
+  
+  sei();//allow interrupts
 
-//set timer2 interrupt at 8kHz
-  TCCR2A = 0;// set entire TCCR2A register to 0
-  TCCR2B = 0;// same for TCCR2B
-  TCNT2  = 0;//initialize counter value to 0
-  // set compare match register for 8khz increments
-  OCR2A = 249;// = (16*10^6) / (8000*8) - 1 (must be <256)
-  // turn on CTC mode
-  TCCR2A |= (1 << WGM21);
-  // Set CS21 bit for 8 prescaler
-  TCCR2B |= (1 << CS21);   
-  // enable timer compare interrupt
-  TIMSK2 |= (1 << OCIE2A);
+//----------------------------------- SERIAL SETUP -----------------------------------//
 
-
-sei();//allow interrupts
-
-  // initialize serial communication at 9600 bits per second:
+// initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
+  while (!Serial) ; // Needed for Leonardo only
+  pinMode(13, OUTPUT);
+  setSyncProvider(requestSync);  //set function to call when sync required
+  Serial.println("Waiting for sync message");
+  flag = 0;
 
 }//end setup
-
-ISR(TIMER0_COMPA_vect){//timer0 interrupt 2kHz toggles pin 8
-//generates pulse wave of frequency 2kHz/2 = 1kHz (takes two cycles for full wave- toggle high then toggle low)
-  //Serial.println(sensorValue);
-}
-
-ISR(TIMER1_COMPA_vect){//timer1 interrupt 1Hz toggles pin 13 (LED)
-//generates pulse wave of frequency 1Hz/2 = 0.5kHz (takes two cycles for full wave- toggle high then toggle low)
-
-  // Increments cont at rate of 100 Hz
-  cont++; 
-
-  // Reads sensor and assembles package to send (at a rate of 100 Hz)
-  sensorValue = analogRead(A0);
-  pkg += String(sensorValue) + ",";
   
-  //Sends the package with a return carriage character
-  // This operation runs at a rate of 100/send_freq
-  if (cont>=send_freq) {
-    pkg = pkg.substring(0,pkg.length()-1); // remove last comma
-    pkg += "\\r";
-    //Sends data package via serial
-    Serial.println(pkg);  
-    // reset variables
-    cont = 0; 
-    pkg =  "";
+
+//----------------------------------- INTERRUPTS DECLARATION -----------------------------------//
+
+ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at 10 Hz
+//generates pulse wave of frequency 1Hz/2 = 0.5kHz (takes two cycles for full wave- toggle high then toggle low)
+  if(flag) {
+
+    cont++;
+     
+    // Reads sensor and assembles package to send (at a rate of 100 Hz)
+    sensorValue = analogRead(A0);
+    //time_t t = now(); // Store the current time in time variable t
+    pkg += String(now()) + "," + String(sensorValue) + ";";
+    //pkg += String(sensorValue) + ";";
+    
+    //Sends the package with a return carriage character
+    // This operation runs at a rate of 100/send_freq
+    if (cont>=send_freq) {
+      
+      pkg = pkg.substring(0,pkg.length()-1); // remove last comma
+      pkg += "\\r";
+      
+      Serial.println(pkg);  //Sends data package via serial
+      
+      cont = 0; // reset variables
+      pkg =  "";
+    }
   }
 }
+
   
-ISR(TIMER2_COMPA_vect){//timer1 interrupt 8kHz toggles pin 9
-//generates pulse wave of frequency 8kHz/2 = 4kHz (takes two cycles for full wave- toggle high then toggle low)
-  //Serial.println("8kHz rules");
+
+void loop(){    
+  
+  if (Serial.available()) {
+    processSyncMessage();
+  }
+  if (timeStatus()!= timeNotSet) {
+    //digitalClockDisplay();
+    flag = 1; 
+  }
+  if (timeStatus() == timeSet) {
+    digitalWrite(13, HIGH); // LED on if synced
+  } else {
+    digitalWrite(13, LOW);  // LED off if needs refresh
+  }
+  //delay(1000);
+}
+
+void digitalClockDisplay(){
+  // digital clock display of the time
+  Serial.print(hour());
+  printDigits(minute());
+  printDigits(second());
+  Serial.print(" ");
+  Serial.print(day());
+  Serial.print(" ");
+  Serial.print(month());
+  Serial.print(" ");
+  Serial.print(year()); 
+  Serial.println(); 
+}
+
+void printDigits(int digits){
+  // utility function for digital clock display: prints preceding colon and leading 0
+  Serial.print(":");
+  if(digits < 10)
+    Serial.print('0');
+  Serial.print(digits);
 }
 
 
-void loop(){
-  //do other things here
-  //Serial.println("teste");
-  //delay(10);
+void processSyncMessage() {
+  unsigned long pctime;
+  const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013
+
+  if(Serial.find(TIME_HEADER)) {  
+     pctime = Serial.parseInt();
+     if( pctime >= DEFAULT_TIME) { // check the integer is a valid time (greater than Jan 1 2013)
+       setTime(pctime); // Sync Arduino clock to the time received on the serial port
+     }
+  }
+}
+
+time_t requestSync()
+{
+  Serial.write(TIME_REQUEST);  
+  return 0; // the time will be sent later in response to serial mesg
 }
 
