@@ -55,7 +55,7 @@ def parseFile(textfile):
 	line_measures = []
 	line_logs = []
 	with open(textfile) as f:
-		content = f.readlines() 
+		content = f.readlines()
 		for line in content:	# iterates through lines and checks header
 			if line[0] == LOG_HEADER:
 				line_logs.append(line[1:])
@@ -86,7 +86,7 @@ def parseFile(textfile):
 	plotChart(m_times, m_values)
 
 def plotChart(x_values, y_values):
-	
+
 	start_t = float(start_time)
 	x_values = [(float(x)-start_t)/1000 for x in x_values] # converts values to float and for X, removes offset and divides by 1000 (data in ms)
 	y_values = [float(y) for y in y_values]
@@ -121,4 +121,3 @@ else:
 parseFile(test_file)
 
 exit()
-
