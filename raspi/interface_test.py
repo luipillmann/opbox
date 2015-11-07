@@ -1,5 +1,12 @@
-from ConsoleInterface import ConsoleInterface
+from table import Table
+from interface import ConsoleInterface
 
-console = ConsoleInterface()
-console.initInterface()
+data = Table('data')
+
+data.add_row
+
+console = ConsoleInterface(data)
+console.init_interface()
+
+
 
