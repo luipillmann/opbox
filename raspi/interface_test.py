@@ -8,5 +8,7 @@ data.add_row
 console = ConsoleInterface(data)
 console.init_interface()
 
+a = 'dummy'
+
 
 
