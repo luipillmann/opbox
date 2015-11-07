@@ -49,18 +49,14 @@ class ConsoleInterface(object):
         self.print_row(empty_row)
 
     def draw_table(self):
+        self.cprint_row(['Time','',   'Temp[oC]','','FBar[N]','','LInt[lx]',''])
         for row in self.table.rows:
-            self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])
-            self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])
-            self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])
+            self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])            
 
     def init_interface(self):
-        std_row = ['AAAAAAAA','BBBBBBBB','CCCCCCCC','DDDDDDDD','EEEEEEEE','FFFFFFF','GGGGGGGG','HHHHHHHH']
-        data_row = ['','','','','','','','']
-
         os.system('clear')
         self.print_centered_with_symbol('', ' ')
-        self.print_centered_with_symbol('Welcome to OpBox v0.0', ' ')
+        self.print_centered_with_symbol('Welcome to OpBox v0.1', ' ')
         self.print_centered_with_symbol('contact@opbox.org', ' ')
         self.new_line() 
         self.print_centered_with_symbol('', '=')
@@ -68,12 +64,6 @@ class ConsoleInterface(object):
         self.print_centered_with_symbol('', '=')
         self.new_line()
         self.print_centered_with_symbol('MEASUREMENTS', '  .  ')
-        self.new_line()
-        self.cprint_row(['Time','',   'Temp[oC]','','FBar','','LInt[lx]',''])
-        self.cprint_row(['13:34:33','','23.3','','20.2','','56',''])
-        self.cprint_row(['13:34:33','','23.2','','6.7','','56',''])
-        self.cprint_row(['13:34:34','','23.3','','0.0','','59',''])
-        self.new_line()
         self.new_line()
 #Test code
 
