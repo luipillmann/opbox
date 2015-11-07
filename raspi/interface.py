@@ -1,3 +1,16 @@
+"""
+Interface based on 8 coloumns
+
+Column width and word length parametrized by consoles dimension (2 chars for padding)
+    Recommend word max. length: 8 chars for 80-column console
+
+init_interface prints header (still hardcoded)
+print_row, cprint_row, rprint_row print row aligned to the left, center and right, respectively.
+print_centered_with_symbol is useful to fill lines with symbols and, optionally, a title.
+draw_table prints table of values from the table binded in instantiation
+
+"""
+
 import os
 from table import Table
 
@@ -49,7 +62,9 @@ class ConsoleInterface(object):
         self.print_row(empty_row)
 
     def draw_table(self):
+        self.print_centered_with_symbol('', '-')
         self.cprint_row(['Time','',   'Temp[oC]','','FBar[N]','','LInt[lx]',''])
+        self.print_centered_with_symbol('', '-')
         for row in self.table.rows:
             self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])            
 
@@ -63,8 +78,7 @@ class ConsoleInterface(object):
         self.cprint_row(['Date: ','12/11/15','','Start time: ','13:34:33','','Routine: ','03A'])
         self.print_centered_with_symbol('', '=')
         self.new_line()
-        self.print_centered_with_symbol('MEASUREMENTS', '  .  ')
+        self.print_centered_with_symbol('Skinner Box Data Aquisition', '  .  ')
         self.new_line()
-#Test code
 
 
