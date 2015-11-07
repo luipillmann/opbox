@@ -49,7 +49,10 @@ class ConsoleInterface(object):
         self.print_row(empty_row)
 
     def draw_table(self):
-        pass
+        for row in self.table.rows:
+            self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])
+            self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])
+            self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])
 
     def init_interface(self):
         std_row = ['AAAAAAAA','BBBBBBBB','CCCCCCCC','DDDDDDDD','EEEEEEEE','FFFFFFF','GGGGGGGG','HHHHHHHH']

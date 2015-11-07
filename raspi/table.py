@@ -6,10 +6,10 @@ class Table(object):
 
     def add_row(self, row):
            self.rows.append(row)
-           if row.parent != self:
-               row.parent = self
+           # if row.parent != self:
+           #     row.parent = self
 
     def remove_row(self, row):
         self.rows.remove(row)
-        if row.parent == self:
-            row.parent = None
+        # if row.parent == self:
+        #     row.parent = None
