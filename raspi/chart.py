@@ -1,5 +1,9 @@
 import plotly.plotly as py
 import plotly.graph_objs as go
+import plotly.tools as tls
+
+tls.set_credentials_file(username='luipillmann', api_key='k0aql2lhru')
+
 
 class Chart(object):
 	"""A class that makes charts."""
