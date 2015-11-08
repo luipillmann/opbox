@@ -91,20 +91,20 @@ cli();//stop interrupts
 ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at 10 Hz
 //generates pulse wave of frequency 1Hz/2 = 0.5kHz (takes two cycles for full wave- toggle high then toggle low)
   if(flag) {
-
-    if(!start) { // Runs once to get start time of the first measurement
-      start_millis = millis();
-      start = 1;
-      start_txt += STARTTIME_HEADER + String(start_millis); //sends start time in ms with "S"  first
-      Serial.println(start_txt);
-    }
-    
+       
     cont++;
     
     //Sends the package with a return carriage character
     // This operation runs at a rate of 100/send_freq
     if (cont>=send_freq) {
 
+//      if(!start) { // Runs once to get start time of the first measurement
+//        start_millis = millis();
+//        start = 1;
+//        start_txt += STARTTIME_HEADER + String(start_millis); //sends start time in ms with "S"  first
+//        Serial.println(start_txt);
+//      }
+//      
       // Reads sensor and assembles package to send (at a rate of 100 Hz)
       sensorValue = analogRead(A0);
       

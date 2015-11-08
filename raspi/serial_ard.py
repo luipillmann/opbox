@@ -20,7 +20,15 @@ class SerialArduino(object):
 
     def read(self):
     	# Serial read section
-        #msg = ard.read(ard.inWaiting()) # read all characters in buffer
+        msg = self.ard.read(self.ard.inWaiting()) # read all characters in buffer
+        #msg = self.ard.readline()
+        #print msg;
+        #print ("Message from arduino: ")
+        return msg
+
+    def read_line(self):
+    	# Serial read section
+        #msg = self.ard.read(self.ard.inWaiting()) # read all characters in buffer
         msg = self.ard.readline()
         #print msg;
         #print ("Message from arduino: ")
@@ -34,4 +42,7 @@ class SerialArduino(object):
         print (txt)
         self.ard.write(txt)
         time.sleep(1) # I shortened this to match the new value in your Arduino code
-        return
+        #return
+
+    def flush(self):
+    	self.ard.flush()

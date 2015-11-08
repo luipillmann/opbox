@@ -29,19 +29,27 @@ class FileHandler(object):
 		data = []
 		line_measures = []
 		line_logs = []
+		start_time = ''
 		with open(self.textfile) as f:
 			content = f.readlines()
+			is_start = 0
 			for line in content:	# iterates through lines and checks header
 				if line[0] == defines.LOG_HEADER:
 					line_logs.append(line[1:])
-				elif line[0] == defines.STARTTIME_HEADER:
-					start_time = line[1:]
-					start_time = start_time[:4] #
-					#print '\n\nStart time: '
-					#print start_time
-					globals()['start_time'] = start_time # sets global variable
+					if 'Aquisition has started' in line:
+						is_start = 1
+					else:
+						is_start = 0
 				elif line[0] == defines.MEASUREMENT_HEADER:
 					line_measures.append(line[1:])
+					if is_start == 1:
+						start_time = line[1:]
+						start_time = start_time[:4] #
+						print '\n\nStart time: '
+						print start_time					
+						globals()['start_time'] = start_time # sets global variable
+						is_start = 0
+					is_start = 0
 
 		pairs = [] # next, will not be pairs, but trios, and so on, depending on the number of sensors
 
@@ -52,9 +60,9 @@ class FileHandler(object):
 		m_lint = []
 
 		for item in pairs:
-			aux = item.partition(',');
-			m_times.append(aux[0])
-			m_lint.append(aux[2])
+			is_start = item.partition(',');
+			m_times.append(is_start[0])
+			m_lint.append(is_start[2])
 
 		start_t = float(start_time)
 		time_values = [(float(x)-start_t)/1000 for x in m_times] # converts values to float and for X, removes offset and divides by 1000 (data in ms)

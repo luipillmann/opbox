@@ -80,6 +80,18 @@ class ConsoleInterface(object):
         self.cprint_row(['Date: ','12/11/15','','Start time: ','13:34:33','','Routine: ','03A'])
         self.print_centered_with_symbol('', '=')
         self.new_line()
+
+    def show_menu(self):
+        op = raw_input('Do you want to start the experiment? (y/n) ')
+        return op
+
+    def setup_interface(self):
+        self.print_centered_with_symbol('TEST SETUP:', '  -  ')
+
+
+    def update_interface(self):
+        self.init_interface()
+        self.draw_table()
         
 
 
