@@ -32,12 +32,14 @@
 //this code will enable arduino timer interrupts.
 //timer1 will interrupt at 100 Hz
 
-#define LOG_HEADER  "L"         // Header tag for logging messages
-#define STARTTIME_HEADER  "S"   // Header tag for start time message
+#define LOG_HEADER          "L" // Header tag for logging messages
+#define STARTTIME_HEADER    "S" // Header tag for start time message
 #define MEASUREMENT_HEADER  "M" // Header tag for serial measurement message
-#define CMD_HEADER  "C"         // Header tag for serial command message
-#define TIME_HEADER  "T"        // Header tag for serial time sync message
-#define TIME_REQUEST  7         // ASCII bell character requests a time sync message 
+#define CMD_HEADER          "C" // Header tag for serial command message
+#define TEMPERATURE_HEADER  "T" // Header tag for temperature value
+#define FORCE_BAR_HEADER    "F" // Header tag for bar force value
+#define LIGHT_HEADER        "I" // Header tag for light intensity value
+#define TIME_REQUEST         7         // ASCII bell character requests a time sync message 
 
 int flag = 0; // Controls transmission start
 int start = 0; // Gets transmission start
@@ -46,7 +48,9 @@ String start_txt = "";
 
 
 // anolog storage
-int sensorValue = 0; 
+float tmpValue = 23.0; 
+float barValue = 0.0; 
+int ldrValue = 0; 
 int cont = 0;
 int send_freq = 100; // sending frequency is 100/send_freq (timer1)
 String pkg = MEASUREMENT_HEADER;
@@ -106,12 +110,15 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at
 //      }
 //      
       // Reads sensor and assembles package to send (at a rate of 100 Hz)
-      sensorValue = analogRead(A0);
+      ldrValue = analogRead(A0); // reads LDR value
       
-      pkg += String(millis()) + "," + String(sensorValue) + ";";
+      pkg += String(millis()) + ",";        // adds time value
+      pkg += TEMPERATURE_HEADER + String(tmpValue) + ",";  // adds temperature value
+      pkg += FORCE_BAR_HEADER   + String(barValue) + ",";  // adds bar force value
+      pkg += LIGHT_HEADER       + String(ldrValue);        // adds LDR value
       //pkg += String(sensorValue) + ";";
         
-      pkg = pkg.substring(0,pkg.length()-1); // remove last comma
+      //pkg = pkg.substring(0,pkg.length()-1); // remove last comma
       //pkg += "\\r";
       
       Serial.println(pkg);  //Sends data package via serial

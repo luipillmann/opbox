@@ -12,7 +12,7 @@ class Chart(object):
 		print 'Plotting chart...'
 		trace1 = go.Scatter(
 			x=self.data[0],
-			y=self.data[1],
+			y=self.data[3],
 			mode='markers'
 		)
 		data = [trace1]

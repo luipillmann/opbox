@@ -25,6 +25,27 @@ class FileHandler(object):
 			print content
 			return content
 
+	def get_start_time(self):
+		start_time = ''
+		with open(self.textfile) as f:
+			content = f.readlines()
+			is_start = 0
+			for line in content:	# iterates through lines and checks header
+				if line[0] == defines.LOG_HEADER:
+					if 'Aquisition has started' in line:
+						is_start = 1
+					else:
+						is_start = 0
+				elif line[0] == defines.MEASUREMENT_HEADER:
+					if is_start == 1: # saves time value from this line as start time as detected above
+						start_time = line[1:]
+						start_time = start_time[:4] 
+						globals()['start_time'] = start_time # sets global variable
+						is_start = 0
+						return float(start_time)
+					is_start = 0
+
+
 	def parse(self):
 		data = []
 		line_measures = []
@@ -41,34 +62,42 @@ class FileHandler(object):
 					else:
 						is_start = 0
 				elif line[0] == defines.MEASUREMENT_HEADER:
-					line_measures.append(line[1:])
-					if is_start == 1:
+					line_measures.append(line)
+					if is_start == 1: # saves time value from this line as start time as detected above
 						start_time = line[1:]
-						start_time = start_time[:4] #
-						print '\n\nStart time: '
-						print start_time					
+						start_time = start_time[:4] 
 						globals()['start_time'] = start_time # sets global variable
 						is_start = 0
 					is_start = 0
 
-		pairs = [] # next, will not be pairs, but trios, and so on, depending on the number of sensors
+		values = [] # next, will not be pairs, but trios, and so on, depending on the number of sensors
 
 		for line in line_measures:
-			[pairs.append(x.strip()) for x in line.split(';')]
-
-		m_times = []
+			[values.append(x.strip()) for x in line.split(',')]
+		
+		m_time = []
+		m_temp = []
+		m_fbar = []
 		m_lint = []
 
-		for item in pairs:
-			is_start = item.partition(',');
-			m_times.append(is_start[0])
-			m_lint.append(is_start[2])
+		for item in values:
+			if item[0] == defines.MEASUREMENT_HEADER:
+				m_time.append(item[1:])
+			elif item[0] == defines.TEMPERATURE_HEADER:
+				m_temp.append(item[1:])
+			elif item[0] == defines.FORCE_BAR_HEADER:
+				m_fbar.append(item[1:])
+			elif item[0] == defines.LIGHT_HEADER:
+				m_lint.append(item[1:])
 
+		# Processes values to float. Time to seconds
 		start_t = float(start_time)
-		time_values = [(float(x)-start_t)/1000 for x in m_times] # converts values to float and for X, removes offset and divides by 1000 (data in ms)
+		time_values = [(float(x)-start_t)/1000 for x in m_time] # converts values to float and for X, removes offset and divides by 1000 (data in ms)
+		temp_values = [float(y) for y in m_temp]
+		fbar_values = [float(y) for y in m_fbar]
 		lint_values = [float(y) for y in m_lint]
-
-		data = [time_values, lint_values] #data are float values
+		
+		data = [time_values, temp_values, fbar_values, lint_values] #data are float values
 
 		return data
 

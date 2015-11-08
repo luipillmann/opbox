@@ -42,6 +42,36 @@ def getch():
 		termios.tcsetattr(0, termios.TCSANOW, old_settings)
 	return ch
 
+def parse_line(line):
+	values = []
+	[values.append(x.strip()) for x in line.split(',')]
+	
+	m_time = ''
+	m_temp = ''
+	m_fbar = ''
+	m_lint = ''
+
+	for item in values:
+		if item[0] == defines.MEASUREMENT_HEADER:
+			m_time = item[1:]
+		elif item[0] == defines.TEMPERATURE_HEADER:
+			m_temp = item[1:]
+		elif item[0] == defines.FORCE_BAR_HEADER:
+			m_fbar = item[1:]
+		elif item[0] == defines.LIGHT_HEADER:
+			m_lint = item[1:]
+
+	# Processes values to float. Time to seconds
+	start_t = txt.get_start_time()
+	m_time = (float(m_time)-start_t)/1000  # converts values to float and for X, removes offset and divides by 1000 (data in ms)
+	#temp_values = [float(y) for y in m_temp]
+	#fbar_values = [float(y) for y in m_fbar]
+	#lint_values = [float(y) for y in m_lint]
+	
+	row = [str(m_time), m_temp, m_fbar, m_lint] #data are float values
+
+	return row	
+
 
 #### Code itself ####
 
@@ -60,18 +90,14 @@ if op.upper() == 'Y':
 	txt.set_name(user_file)
 
 	
-	ard.write('C1')
-	time.sleep(3)
-	ard.flush()
+	ard.write('C1') # C1 is the command to start C = cmd, 1 sets Arduino 'flag' to 1
 	msg = ard.read()
-	print msg
-	if 'a' in msg:
-		print 'Aquisition has started.'
+	txt.write(msg) # saves first data to txt file!
+	if 'started' in msg:
+		print '<<<Aquisition has started.'
 
-	txt.write(msg)
-
-	dat.add_rows(build_rows(dtime, dtemp, dfbar, dilux))
-	cli.draw_table()
+	#dat.add_rows(build_rows(dtime, dtemp, dfbar, dilux))
+	#cli.draw_table()
 
 	# Main reading loop
 	print 'Reading serial...'
@@ -82,8 +108,13 @@ if op.upper() == 'Y':
 		if (msg[0] == defines.LOG_HEADER) or (msg[0] == defines.STARTTIME_HEADER) or (msg[0] == defines.MEASUREMENT_HEADER):
 			txt.write(msg)
 			print 'Wrote to file reading ' + str(i)
-		#writeToFile()
-		#time.sleep(1)
+
+			# parses line and adds to data table
+			if msg[0] == defines.MEASUREMENT_HEADER:
+				dat.add_row(parse_line(msg))
+				print 'row added: '
+				print parse_line(msg)
+			cli.update_interface()
 		else:
 			print 'File content not readable at iteration: ' + str(i)
 
