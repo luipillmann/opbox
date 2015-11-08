@@ -48,7 +48,7 @@ String start_txt = "";
 // anolog storage
 int sensorValue = 0; 
 int cont = 0;
-int send_freq = 5; // sending frequency is 100/send_freq (timer1)
+int send_freq = 100; // sending frequency is 100/send_freq (timer1)
 String pkg = MEASUREMENT_HEADER;
 
 void setup(){
@@ -101,16 +101,16 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at
     
     cont++;
     
-    // Reads sensor and assembles package to send (at a rate of 100 Hz)
-    sensorValue = analogRead(A0);
-    
-    pkg += String(millis()) + "," + String(sensorValue) + ";";
-    //pkg += String(sensorValue) + ";";
-    
     //Sends the package with a return carriage character
     // This operation runs at a rate of 100/send_freq
     if (cont>=send_freq) {
+
+      // Reads sensor and assembles package to send (at a rate of 100 Hz)
+      sensorValue = analogRead(A0);
       
+      pkg += String(millis()) + "," + String(sensorValue) + ";";
+      //pkg += String(sensorValue) + ";";
+        
       pkg = pkg.substring(0,pkg.length()-1); // remove last comma
       //pkg += "\\r";
       
@@ -135,11 +135,9 @@ void loop()
     delay(30);  //delay to allow buffer to fill 
     if (Serial.available() >0)
     {
-      processCommand();
+      processCommand(); // checks for any commands received
     }
   }
-  
-  //delay(1000);
 }
 
 int aquisitionStatus() {
@@ -149,7 +147,6 @@ int aquisitionStatus() {
 void startAquisition() {
   if(!aquisitionStatus()) {
     Serial.println(String(LOG_HEADER) + "Aquisition has started");
-    Serial.println("this shit should not be in the file.");
     flag = 1;
   }
     

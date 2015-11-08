@@ -62,6 +62,8 @@ class ConsoleInterface(object):
         self.print_row(empty_row)
 
     def draw_table(self):
+        self.print_centered_with_symbol('Skinner Box Data Aquisition', '  .  ')
+        self.new_line()
         self.print_centered_with_symbol('', '-')
         self.cprint_row(['Time','',   'Temp[oC]','','FBar[N]','','LInt[lx]',''])
         self.print_centered_with_symbol('', '-')
@@ -78,7 +80,6 @@ class ConsoleInterface(object):
         self.cprint_row(['Date: ','12/11/15','','Start time: ','13:34:33','','Routine: ','03A'])
         self.print_centered_with_symbol('', '=')
         self.new_line()
-        self.print_centered_with_symbol('Skinner Box Data Aquisition', '  .  ')
-        self.new_line()
+        
 
 
