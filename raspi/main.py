@@ -89,13 +89,16 @@ if op.upper() == 'Y':
 	user_file = raw_input('Type TXT file name: ')
 	txt.set_name(user_file)
 
-	
+	### !!! BIG INCONSISTENCY RIGHT HERE !!!
+
 	ard.write('C1') # C1 is the command to start C = cmd, 1 sets Arduino 'flag' to 1
 	msg = ard.read()
 	txt.write(msg) # saves first data to txt file!
 	if 'started' in msg:
 		print '<<<Aquisition has started.'
 
+	### GOTTA FIX THIS HAND SHAKE STEP LATER
+	
 	#dat.add_rows(build_rows(dtime, dtemp, dfbar, dilux))
 	#cli.draw_table()
 
