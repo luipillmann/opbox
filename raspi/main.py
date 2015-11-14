@@ -63,7 +63,7 @@ def parse_line(line):
 
 	# Processes values to float. Time to seconds
 	start_t = txt.get_start_time()
-	m_time = (float(m_time)-start_t)/1000  # converts values to float and for X, removes offset and divides by 1000 (data in ms)
+	m_time = int((int(m_time)-start_t)/1000)
 	#temp_values = [float(y) for y in m_temp]
 	#fbar_values = [float(y) for y in m_fbar]
 	#lint_values = [float(y) for y in m_lint]
@@ -82,7 +82,7 @@ dat = Table('data')
 cli = ConsoleInterface(dat) # binds data table to interface object
 
 cli.init_interface() # prints header
-op = cli.show_menu()
+op = cli.start_menu()
 
 if op.upper() == 'Y':
 	#cli.setup_interface()
@@ -105,35 +105,36 @@ if op.upper() == 'Y':
 	# Main reading loop
 	print 'Reading serial...'
 
-	i = 0
-	while (i < 10 + 2):
-		msg = ard.read_line()
-		if (msg[0] == defines.LOG_HEADER) or (msg[0] == defines.STARTTIME_HEADER) or (msg[0] == defines.MEASUREMENT_HEADER):
-			txt.write(msg)
-			print 'Wrote to file reading ' + str(i)
+	try:
+	    i = 0
+	    while True:
+	    	msg = ard.read_line()
+	    	if (msg[0] == defines.LOG_HEADER) or (msg[0] == defines.STARTTIME_HEADER) or (msg[0] == defines.MEASUREMENT_HEADER):
+	    		txt.write(msg)
+	    		#print 'Wrote to file reading ' + str(i)
 
-			# parses line and adds to data table
-			if msg[0] == defines.MEASUREMENT_HEADER:
-				dat.add_row(parse_line(msg))
-				print 'row added: '
-				print parse_line(msg)
-			cli.update_interface()
-		else:
-			print 'File content not readable at iteration: ' + str(i)
+	    		# parses line and adds to data table
+	    		if msg[0] == defines.MEASUREMENT_HEADER:
+	    			dat.add_row(parse_line(msg))
+	    			#print 'row added: '
+	    			#print parse_line(msg)
+	    		cli.update_interface()
+	    	else:
+	    		print 'File content not readable at iteration: ' + str(i)	
+	    	i = i + 1
+	except KeyboardInterrupt:
+	    pass
 
-		i = i + 1
-
-	data = txt.parse()
-	chart1 = Chart(txt.get_name(), 'default', data)
-	chart1.plot()
+	if cli.plot_menu().upper() == 'Y':
+		# processes data and plots chart in plotly
+		data = txt.parse()
+		chart1 = Chart(txt.get_name(), 'default', data)
+		chart1.plot_mult()
 else:
 	pass
 
-ard.write('C0')
-print "Exiting"
-
-
-
+ard.write('C0') # sends command to Arduino stop acquisition 
+print 'Exiting'
 
 #plotChart(data[0], data[1], txt.get_name())
 

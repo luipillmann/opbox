@@ -38,8 +38,8 @@ class SerialArduino(object):
     	# Serial write section
         ardCmd = txt;
         self.ard.flush()
-        print ('Python value sent: ')
-        print (txt)
+        #print ('Python value sent: ')
+        #print (txt)
         self.ard.write(txt)
         time.sleep(1) # I shortened this to match the new value in your Arduino code
         #return

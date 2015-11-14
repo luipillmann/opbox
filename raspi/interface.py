@@ -9,6 +9,8 @@ print_row, cprint_row, rprint_row print row aligned to the left, center and righ
 print_centered_with_symbol is useful to fill lines with symbols and, optionally, a title.
 draw_table prints table of values from the table binded in instantiation
 
+*** 13 lines for the info and table header
+
 """
 
 import os
@@ -65,7 +67,7 @@ class ConsoleInterface(object):
         self.print_centered_with_symbol('Skinner Box Data Aquisition', '  .  ')
         self.new_line()
         self.print_centered_with_symbol('', '-')
-        self.cprint_row(['Time','',   'Temp[oC]','','FBar[N]','','LInt[lx]',''])
+        self.cprint_row(['Time [s]','',   'Temp[oC]','','FBar[N]','','LInt[lx]',''])
         self.print_centered_with_symbol('', '-')
         for row in self.table.rows:
             self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])            
@@ -81,8 +83,12 @@ class ConsoleInterface(object):
         self.print_centered_with_symbol('', '=')
         self.new_line()
 
-    def show_menu(self):
+    def start_menu(self):
         op = raw_input('Do you want to start the experiment? (y/n) ')
+        return op
+
+    def plot_menu(self):
+        op = raw_input('Would you like to plot acquired data? (y/n) ')
         return op
 
     def setup_interface(self):

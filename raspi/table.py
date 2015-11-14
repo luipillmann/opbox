@@ -1,3 +1,11 @@
+"""
+    Data format: 4 columns per row
+        0: Time
+        1: Temperature
+        2: Force applied on bar
+        3: Light intensity
+"""
+
 class Table(object):
     """A class that makes the table."""
     def __init__(self, name, rows=None):
