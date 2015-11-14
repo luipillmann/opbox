@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import os
 import time
 import defines
 from serial_ard import SerialArduino 
@@ -29,18 +30,6 @@ def build_rows(ptime, ptemp, pfbar, pilux):
 		print 'ERROR: Data values not the same lenght.'
 
 	return rows
-
-def getch():
-	import sys, tty, termios
-	old_settings = termios.tcgetattr(0)
-	new_settings = old_settings[:]
-	new_settings[3] &= ~termios.ICANON
-	try:
-		termios.tcsetattr(0, termios.TCSANOW, new_settings)
-		ch = sys.stdin.read(1)
-	finally:
-		termios.tcsetattr(0, termios.TCSANOW, old_settings)
-	return ch
 
 def parse_line(line):
 	values = []
@@ -89,23 +78,24 @@ if op.upper() == 'Y':
 	user_file = raw_input('Type TXT file name: ')
 	txt.set_name(user_file)
 
+	cli.show_warning('Hit Ctrl-C to stop acquisition')
+	cli.getch()
+
 	### !!! BIG INCONSISTENCY RIGHT HERE !!!
 
 	ard.write('C1') # C1 is the command to start C = cmd, 1 sets Arduino 'flag' to 1
 	msg = ard.read()
 	txt.write(msg) # saves first data to txt file!
 	if 'started' in msg:
-		print '<<<Aquisition has started.'
+		print '<<<Acquisition has started.'
 
 	### GOTTA FIX THIS HAND SHAKE STEP LATER
 	
 	#dat.add_rows(build_rows(dtime, dtemp, dfbar, dilux))
 	#cli.draw_table()
 
-	# Main reading loop
-	print 'Reading serial...'
-
-	try:
+	# Main reading loop, stops when user hits Ctrl-C. After that, finishing tasks and infos are done and printed
+	try: 
 	    i = 0
 	    while True:
 	    	msg = ard.read_line()
@@ -123,7 +113,10 @@ if op.upper() == 'Y':
 	    		print 'File content not readable at iteration: ' + str(i)	
 	    	i = i + 1
 	except KeyboardInterrupt:
-	    pass
+	    print '\n'
+	    cli.print_centered_with_symbol('','-')
+	    print 'Acquisition has stopped.'
+	    print '\n\n'
 
 	if cli.plot_menu().upper() == 'Y':
 		# processes data and plots chart in plotly
@@ -134,7 +127,13 @@ else:
 	pass
 
 ard.write('C0') # sends command to Arduino stop acquisition 
-print 'Exiting'
+print '\nExiting...\n'
+
+if op.upper() == 'Y':
+	path = os.path.dirname(os.path.abspath(__file__))
+	print 'Acquired data saved in ' + path + '/' + txt.get_name() + '.txt'
+	print '\n'
+	
 
 #plotChart(data[0], data[1], txt.get_name())
 

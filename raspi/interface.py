@@ -29,6 +29,18 @@ class ConsoleInterface(object):
         self.col_num = 8
         self.table = table
 
+    def getch(self):
+        import sys, tty, termios
+        old_settings = termios.tcgetattr(0)
+        new_settings = old_settings[:]
+        new_settings[3] &= ~termios.ICANON
+        try:
+            termios.tcsetattr(0, termios.TCSANOW, new_settings)
+            ch = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(0, termios.TCSANOW, old_settings)
+        return ch
+
     def print_row(self, row):
         #col_width = max(len(word) for word in row) + 2
         col_width = self.width/self.col_num;
@@ -91,9 +103,12 @@ class ConsoleInterface(object):
         op = raw_input('Would you like to plot acquired data? (y/n) ')
         return op
 
+    def show_warning(self, txt):
+        print '>>> Warning: ' + txt + '.'
+        print '(Press any key to continue)'
+
     def setup_interface(self):
         self.print_centered_with_symbol('TEST SETUP:', '  -  ')
-
 
     def update_interface(self):
         self.init_interface()
