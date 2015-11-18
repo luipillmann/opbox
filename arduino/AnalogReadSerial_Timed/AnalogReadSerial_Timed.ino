@@ -48,8 +48,8 @@ String start_txt = "";
 
 
 // anolog storage
-float tmpValue = 23.0; 
-float barValue = 0.0; 
+int tmpValue = 23.0; 
+int barValue = 0.0; 
 int ldrValue = 0; 
 int cont = 0;
 int send_freq = 100; // sending frequency is 100/send_freq (timer1)
@@ -146,6 +146,8 @@ void loop()
     }
   }
 }
+
+
 
 int aquisitionStatus() {
   return flag;
