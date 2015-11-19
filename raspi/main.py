@@ -112,6 +112,7 @@ if op.upper() == 'Y':
 	    			#print parse_line(msg)
 	    		#cli.update_interface()
 	    		if i==0:
+	    			cli.init_interface()
 	    			cli.draw_table_header()
 	    		cli.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])            
 
