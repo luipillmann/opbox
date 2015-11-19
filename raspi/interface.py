@@ -75,12 +75,15 @@ class ConsoleInterface(object):
         empty_row = ['','','','','','','','']
         self.print_row(empty_row)
 
-    def draw_table(self):
+    def draw_table_header(self):
         self.print_centered_with_symbol('Skinner Box Data Aquisition', '  .  ')
         self.new_line()
         self.print_centered_with_symbol('', '-')
         self.cprint_row(['Time [s]','',   'Temp[oC]','','FBar[N]','','LInt[lx]',''])
         self.print_centered_with_symbol('', '-')
+
+    def draw_table(self):
+        draw_table_header()
         for row in self.table.rows:
             self.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])            
 
