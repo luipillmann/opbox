@@ -10,9 +10,9 @@ from interface import ConsoleInterface
 
 
 #The following line is for serial over GPIO
-port = '/dev/tty.usbmodem1411' # note I'm using Mac OS-X
+#port = '/dev/tty.usbmodem1411' # note I'm using Mac OS-X
 baud_rate = 9600
-#port = '/dev/ttyACM0' # Raspberry Pi's port
+port = '/dev/ttyACM0' # Raspberry Pi's port
 
 user_file = ''
 start_time = ''
