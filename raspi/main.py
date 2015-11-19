@@ -105,6 +105,7 @@ if op.upper() == 'Y':
 	    		#print 'Wrote to file reading ' + str(i)
 
 	    		# parses line and adds to data table
+	    		row = ['','','','','','','','']
 	    		if msg[0] == defines.MEASUREMENT_HEADER:
 	    			row = dat.add_row(parse_line(msg))
 	    			#print 'row added: '
