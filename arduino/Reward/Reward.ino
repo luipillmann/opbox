@@ -20,7 +20,6 @@ int pos = 0;    // variable to store the servo position
 void setup() 
 { 
   myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
-    Serial.begin(9600);
 } 
  
 void loop() 
@@ -31,9 +30,7 @@ void loop()
     flag = 1;
   }
   
-  myservo.write(180);
-  delay(2000);
-  myservo.write(0);
+  giveReward();
   delay(5000); // time until next request
 
 //  for(pos = 0; pos <= 180; pos += 1) // goes from 0 degrees to 180 degrees 
@@ -48,4 +45,10 @@ void loop()
 //    delay(15);                       // waits 15ms for the servo to reach the position 
 //  } 
 } 
+
+void giveReward() {
+  myservo.write(180);
+  delay(2000);
+  myservo.write(0);
+}
 
