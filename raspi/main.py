@@ -106,10 +106,12 @@ if op.upper() == 'Y':
 
 	    		# parses line and adds to data table
 	    		if msg[0] == defines.MEASUREMENT_HEADER:
-	    			dat.add_row(parse_line(msg))
+	    			row = dat.add_row(parse_line(msg))
 	    			#print 'row added: '
 	    			#print parse_line(msg)
-	    		cli.update_interface()
+	    		#cli.update_interface()
+	            cli.cprint_row([row[0],'',row[1],'',row[2],'',row[3],''])            
+
 	    	else:
 	    		print 'File content not readable at iteration: ' + str(i)	
 	    	i = i + 1

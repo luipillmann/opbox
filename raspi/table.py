@@ -16,6 +16,7 @@ class Table(object):
         self.rows.append(row)
         # if row.parent != self:
         #     row.parent = self
+        return row
 
     def add_rows(self, rows):
         for row in rows:
