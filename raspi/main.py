@@ -83,6 +83,7 @@ if op.upper() == 'Y':
 
 	### !!! BIG INCONSISTENCY RIGHT HERE !!!
 
+	ard.write('C0') # stops Arduino just in case 
 	ard.write('C1') # C1 is the command to start C = cmd, 1 sets Arduino 'flag' to 1
 	msg = ard.read()
 	txt.write(msg) # saves first data to txt file!
