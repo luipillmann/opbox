@@ -112,5 +112,5 @@ class Chart(object):
 		)
 		fig = go.Figure(data=data, layout=layout)
 		plot_url = py.plot(fig, filename=self.name)
-		print 'Access the plot in the link below: '
+		print '\nAccess the plot in the link below: '
 		print plot_url

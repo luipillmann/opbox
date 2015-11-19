@@ -56,7 +56,7 @@ Servo myservo;  // create servo object to control a servo
 
 // anolog storage
 int tmpValue = 23.0; 
-int barValue = 0.0; 
+int barValue = 0; 
 int ldrValue = 0; 
 int cont = 0;
 int send_freq = 100; // sending frequency is 100/send_freq (timer1)
@@ -88,14 +88,18 @@ cli();//stop interrupts
 // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
   while (!Serial) ; // Needed for Leonardo only
-  pinMode(13, OUTPUT);
+  //pinMode(13, OUTPUT);
   //setSyncProvider(requestSync);  //set function to call when sync required
   Serial.println("Waiting for command message");
+  
+//----------------------------------- REWARD SETUP -----------------------------------//  
+  attachInterrupt(digitalPinToInterrupt(pin), toggle, RISING); // sets interrupt at pin 2 on rising, calls toggle function
+  myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
+
+//----------------------------------- GENERAL FLAGS -----------------------------------//  
   flag = 0;
   start = 0;
 
-  attachInterrupt(digitalPinToInterrupt(pin), toggle, RISING); // sets interrupt at pin 2 on rising, calls toggle function
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
 
 }//end setup
 
@@ -120,6 +124,8 @@ ISR(TIMER2_COMPA_vect){//timer0 interrupt 100Hz reads analog sensor and sends at
 //      
       // Reads sensor and assembles package to send (at a rate of 100 Hz)
       ldrValue = analogRead(A0); // reads LDR value
+      barValue = analogRead(A1); // reads Bar value
+      
       
       pkg += String(millis()) + ",";        // adds time value
       pkg += TEMPERATURE_HEADER + String(tmpValue) + ",";  // adds temperature value
