@@ -1,4 +1,5 @@
 #include <Time.h>
+#include <Servo.h> 
 
 //timer interrupts
 //by Amanda Ghassaei
@@ -39,13 +40,19 @@
 #define TEMPERATURE_HEADER  "T" // Header tag for temperature value
 #define FORCE_BAR_HEADER    "F" // Header tag for bar force value
 #define LIGHT_HEADER        "I" // Header tag for light intensity value
+#define START_HEADER        "A" // Header tag for logging messages
+#define STOP_HEADER         "P" // Header tag for logging messages
 #define TIME_REQUEST         7         // ASCII bell character requests a time sync message 
 
-int flag = 0; // Controls transmission start
-int start = 0; // Gets transmission start
+volatile int flag = 0; // Controls transmission start
+volatile int start = 0; // Gets transmission start
 int start_millis = 0;
 String start_txt = "";
 
+// Reward 
+int pin = 2; // interrupt pin
+volatile int reward = LOW;
+Servo myservo;  // create servo object to control a servo 
 
 // anolog storage
 int tmpValue = 23.0; 
@@ -57,27 +64,55 @@ String pkg = MEASUREMENT_HEADER;
 
 void setup(){
 
+  //attachInterrupt(digitalPinToInterrupt(pin), toggle, RISING); // sets interrupt at pin 2 on rising, calls toggle function
+  //myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
+
 //----------------------------------- INTERRUPTS SETUP -----------------------------------//
 
 cli();//stop interrupts
 
-//set timer1 interrupt at 100Hz -- (Alterado para 100 Hz)
-  TCCR1A = 0;// set entire TCCR1A register to 0
-  TCCR1B = 0;// same for TCCR1B
-  TCNT1  = 0;//initialize counter value to 0
-  // set compare match register for 1hz increments
-  OCR1A = 624;// = (16*10^6) / (100*256) - 1 (must be <65536)
+//set timer0 interrupt at 2kHz --> 100 Hz
+//  TCCR0A = 0;// set entire TCCR2A register to 0
+//  TCCR0B = 0;// same for TCCR2B
+//  TCNT0  = 0;//initialize counter value to 0
+//  // set compare match register for 2khz increments
+//  OCR0A = 77;// = (16*10^6) / (2000*64) - 1 (must be <256)
+//  // turn on CTC mode
+//  TCCR0A |= (1 << WGM01);
+//  // Set CS02 and CS00 bits for 1024 prescaler
+//  TCCR0B |= (1 << CS02) | (1 << CS00);   
+//  // enable timer compare interrupt
+//  TIMSK0 |= (1 << OCIE0A);
+
+  //set timer2 interrupt at 8kHz
+  TCCR2A = 0;// set entire TCCR2A register to 0
+  TCCR2B = 0;// same for TCCR2B
+  TCNT2  = 0;//initialize counter value to 0
+  // set compare match register for 8khz increments
+  OCR2A = 77;// = (16*10^6) / (8000*8) - 1 (must be <256)
   // turn on CTC mode
-  TCCR1B |= (1 << WGM12);
-  // Set CS12 bit for 256 prescaler
-  TCCR1B |= (1 << CS12);  
+  TCCR2A |= (1 << WGM21);
+  // Set CS21 bit for 8 prescaler
+  TCCR2B |= (1 << CS20) | (1 << CS21) | (1 << CS22);   
   // enable timer compare interrupt
-  TIMSK1 |= (1 << OCIE1A);
+  TIMSK2 |= (1 << OCIE2A);
+
+////set timer1 interrupt at 100Hz -- (Alterado para 100 Hz)
+//  TCCR1A = 0;// set entire TCCR1A register to 0
+//  TCCR1B = 0;// same for TCCR1B
+//  TCNT1  = 0;//initialize counter value to 0
+//  // set compare match register for 1hz increments
+//  OCR1A = 624;// = (16*10^6) / (100*256) - 1 (must be <65536)
+//  // turn on CTC mode
+//  TCCR1B |= (1 << WGM12);
+//  // Set CS12 bit for 256 prescaler
+//  TCCR1B |= (1 << CS12);  
+//  // enable timer compare interrupt
+//  TIMSK1 |= (1 << OCIE1A);
   
   sei();//allow interrupts
 
 //----------------------------------- SERIAL SETUP -----------------------------------//
-
 // initialize serial communication at 9600 bits per second:
   Serial.begin(9600);
   while (!Serial) ; // Needed for Leonardo only
@@ -88,11 +123,10 @@ cli();//stop interrupts
   start = 0;
 
 }//end setup
-  
 
 //----------------------------------- INTERRUPTS DECLARATION -----------------------------------//
 
-ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at 10 Hz
+ISR(TIMER2_COMPA_vect){//timer0 interrupt 100Hz reads analog sensor and sends at 10 Hz
 //generates pulse wave of frequency 1Hz/2 = 0.5kHz (takes two cycles for full wave- toggle high then toggle low)
   if(flag) {
        
@@ -133,18 +167,37 @@ ISR(TIMER1_COMPA_vect){//timer1 interrupt 100Hz reads analog sensor and sends at
 
 void loop()
 {
-  while (!Serial.available()) {Serial.println("2");} // wait for data to arrive
+  //Serial.println("1");
+  if (!flag) {
+    myservo.write(0); // sets servo to 0 position at the beginning
+    delay(2000);  
+    //flag = 1;
+  }
   
+  while (!Serial.available()) {/*Serial.println("2");*/} // wait for data to arrive
+
+  //Serial.println("3");
   // serial read section
   while (Serial.available()) // this will be skipped if no data present, leading to
                              // the code sitting in the delay function below
   {
+    //Serial.println("4");
     delay(30);  //delay to allow buffer to fill 
     if (Serial.available() >0)
     {
+      //Serial.println("5");
       processCommand(); // checks for any commands received
+      //Serial.println("52");
     }
+
+      if(reward) { // polls reward for a change. If high, activates the motor
+        giveReward();
+      }
   }
+
+
+
+   //Serial.println("6");
 }
 
 
@@ -190,7 +243,18 @@ void processCommand() { // Waits for command, which has to start with C
   }
 }
 
+void toggle() {
+  reward = HIGH;
+}
 
+void giveReward() {
+    //state = !state;
+    //digitalWrite(led, state);
+    //myservo.write(180);
+    delay(2000);
+    //myservo.write(0);
+    reward = LOW;
+}
 
 //time_t requestSync()
 //{

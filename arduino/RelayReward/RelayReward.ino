@@ -3,34 +3,36 @@
 int pin = 2;
 int led = 13;
 int flag = 0;
-volatile int state = LOW;
+volatile int reward = LOW;
 
 Servo myservo;  // create servo object to control a servo 
 
 void setup() {
     pinMode(led, OUTPUT);
-    attachInterrupt(digitalPinToInterrupt(pin), blink, RISING);
+    attachInterrupt(digitalPinToInterrupt(pin), toggle, RISING);
 
     myservo.attach(9);  // attaches the servo on pin 9 to the servo object 
 }
 
 void loop() {
-    digitalWrite(led, state);
+    
+    
     if (!flag) {
-      myservo.write(0);
+      myservo.write(0); // sets servo to 0 position at the beginning
       delay(2000);  
-      flag = 1;
+      //flag = 1;
     }
 
-    if(state) {
+    if(reward) { // polls reward for a change. If high, activates the motor
       giveReward();
-      digitalWrite(led, state);
+      digitalWrite(led, reward);
     }
     
 }
 
-void blink () {
-  state = HIGH;
+void toggle () {
+  reward = HIGH;
+  flag = 1;
 }
 
 void giveReward() {
@@ -39,5 +41,5 @@ void giveReward() {
     myservo.write(180);
     delay(2000);
     myservo.write(0);
-    state = LOW;
+    reward = LOW;
 }
