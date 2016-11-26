@@ -8,4 +8,4 @@ OpBox aims to be a an easy to use and modular system, allowing researchers to up
 OpBox is implemented with off-the-shelf components. It uses a Raspberry Pi 2 as its main processor and an Arduino Uno to interface with sensors and actuators. The code presented here is divided into `/raspi` with Python scripts for the RPi and `/arduino` with the sketches.
 
 ## Visit us
-To know more, go to http://opbox.org.
+To know more, go to http://luipillmann.com/opbox.
